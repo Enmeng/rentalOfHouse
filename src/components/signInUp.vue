@@ -129,18 +129,45 @@ export default {
   methods:{
     handleSubmit(name) {
       //登录
+        var _this=this;
         if(name=='signInUser'){
           this.$refs[name].validate((valid) => {
             if (valid) {
-                this.$Message.success('登录成功!');
-                this.gUserName.setUserName(this.signInUser.userName);
-                if(window.localStorage){
-                    var storage=window.localStorage;
-                    storage.setItem("userName",this.signInUser.userName)
-                }
-                this.$router.push({name:'userPage',path: '/userPage',query:{userName:this.signInUser.userName},params:{userType:this.userType}});
+                axios.get('/api/userInformation/getUserByName',{params:{user_name:_this.signInUser.userName}})
+                .then(function(respond){
+                   if(respond.data.length){
+                     var tempType='1';
+                     if(_this.userType=='renter'){
+                       tempType='1';
+                     }else{
+                       tempType='0';
+                     }
+                     if(respond.data[0].user_type_renter==tempType){
+                       //用户存在且密码正确才能登陆
+                        if(respond.data[0].password==_this.signInUser.password){
+                            _this.$Message.success('登录成功!');
+                            _this.gUserName.setUserName(_this.signInUser.userName);
+                            if(window.localStorage){
+                              var storage=window.localStorage;
+                              storage.setItem("userName",_this.signInUser.userName)
+                            }
+                            _this.$router.push({name:'userPage',path: '/userPage',query:{userName:_this.signInUser.userName},params:{userType:_this.userType}});
+                        }else{
+                          _this.$Message.error("密码错误!");
+                        }
+                     }else{
+                       _this.$Message.error("用户类型错误!");
+                     }
+                   }else{
+                     _this.$Message.error("账号不存在!");
+                   }
+                })
+                .catch(function(err){
+                   console.log("err",err);
+                })
+                
             } else {
-                this.$Message.error('登录失败!');
+                _this.$Message.error('登录失败!');
             }
         })
         }
@@ -149,13 +176,37 @@ export default {
           this.$refs[name].validate((valid) => {
             if (valid) {
                 if(this.signUpUser.password==this.signUpUser.confirmPassword){
-                  this.$Message.success('注册成功!');
-                  this._userName=this.signUpUser.userName;
-                  if(window.localStorage){
-                    var storage=window.localStorage;
-                    storage.setItem("userName",this.signInUser.userName)
-                  } 
-                  this.$router.push({name:'userPage',path: '/userPage',query:{userName:this.signUpUser.userName},params:{userType:this.userType}});
+                  axios.get('/api/userInformation/getUserByName',{params:{user_name:_this.signUpUser.userName}})
+                  .then(function(respond){
+                    if(respond.data.length==0){
+                      //用户不存在可插入
+                      var tempType=true;
+                      if(_this.userType=='renter'){
+                        tempType=true;
+                      }else{
+                        tempType=false;
+                      }
+                      axios.post('/api/userInformation/addUser',{user_name:_this.signUpUser.userName,password:_this.signUpUser.password,user_type_renter:tempType})
+                      .then(function(respond){
+                        if(respond.data.code=='1'){
+                          _this.$Message.success('注册成功!');
+                          _this._userName=_this.signUpUser.userName;
+                          if(window.localStorage){
+                            var storage=window.localStorage;
+                            storage.setItem("userName",_this.signInUser.userName)
+                          } 
+                          _this.$router.push({name:'userPage',path: '/userPage',query:{userName:_this.signUpUser.userName},params:{userType:_this.userType}});
+                        }
+                      })
+                     }else{
+                           _this.$Message.error("账号已存在!");
+                     }
+                  })
+                  .catch(function(err){
+                    console.log("err",err);
+                  })
+                  // this.$Message.success('注册成功!');
+                  
                 }
                 if(this.signUpUser.password!=this.signUpUser.confirmPassword){
                   this.$Message.error('密码与确认密码不一致!');
@@ -166,13 +217,13 @@ export default {
         }) 
         }
         
-        axios.post('/api/userInformation/getUserByName',{user_name:"小可爱"})
-        .then(function(respond){
-          console.log("responds",respond.data);
-        })
-        .catch(function(err){
-          console.log("err",err);
-        })
+        // axios.post('/api/userInformation/getUserByName',{user_name:"小可爱"})
+        // .then(function(respond){
+        //   console.log("responds",respond.data);
+        // })
+        // .catch(function(err){
+        //   console.log("err",err);
+        // })
         
     },
     //验证密码
