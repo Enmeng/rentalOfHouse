@@ -190,11 +190,40 @@ export default {
                       .then(function(respond){
                         if(respond.data.code=='1'){
                           _this.$Message.success('注册成功!');
+                          _this.gUserName.setUserName(_this.signUpUser.userName);
                           _this._userName=_this.signUpUser.userName;
                           if(window.localStorage){
                             var storage=window.localStorage;
-                            storage.setItem("userName",_this.signInUser.userName)
+                            storage.setItem("userName",_this.signUpUser.userName)
                           } 
+                          //根据用户类型添加renterInformation和rentSeekingPerInformation
+                          //出租者
+                          if(_this.userType=='renter'){
+                              axios.post('/api/renterInformation/insertRenter',{user_name:_this.signUpUser.userName,password:_this.signUpUser.password,user_type_renter:tempType})
+                              .then(function(respond){
+                                if(respond.data.code=='1'){
+                                  console.log("/api/renterInformation/insertRenter插入成功");
+                                }
+                              }
+                              )
+                              .catch(function(err){
+                                console.log(err);
+                              })
+                          }
+                          else{
+                            //求租者
+                            axios.post('/api/rentSeekingPerInformation/insertRentSeekingPer',{user_name:_this.signUpUser.userName,password:_this.signUpUser.password,user_type_renter:tempType})
+                              .then(function(respond){
+                                if(respond.data.code=='1'){
+                                  console.log("/api/rentSeekingPerInformation/insertRentSeekingPer插入成功");
+                                }
+                              }
+                              )
+                              .catch(function(err){
+                                console.log(err);
+                              })
+                          }
+                          
                           _this.$router.push({name:'userPage',path: '/userPage',query:{userName:_this.signUpUser.userName},params:{userType:_this.userType}});
                         }
                       })

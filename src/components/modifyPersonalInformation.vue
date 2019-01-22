@@ -7,9 +7,9 @@
                 <p slot="extra" class="edit" @click="callEditor">编辑<Icon type="ios-create-outline" /></p>
                 <div class="show-information">
                     <div class="information-item">
-                        <p>用户名：{{userName}}</p>
+                        <p>用户名：{{currentUserName}}</p>
                         <p>性别：{{userInformation.gender}}</p>
-                        <p>信用评分：{{userInformation.creditGrade}}</p>
+                        <p v-if="userType=='renter'">信用评分：{{userInformation.creditGrade}}</p>
                         <p>地理位置：{{userInformation.location}}</p>
                         <p>联系电话：{{userInformation.phoneNumber}}</p>
                         <p>邮箱：{{userInformation.email}}</p>
@@ -70,8 +70,8 @@
                 </FormItem>
             </Form>
             <div class="demo-drawer-footer">
-                <Button style="margin-right: 8px" @click="value3 = false">取消</Button>
-                <Button type="primary" @click="value3 = false">保存</Button>
+                <Button style="margin-right: 8px" @click="cancelEdit">取消</Button>
+                <Button type="primary" @click="saveEdit">保存</Button>
             </div>
         </Drawer>
         <Drawer title="修改密码" :closable="false" v-model="passwordDrawer">
@@ -84,13 +84,14 @@
                 </FormItem>
             </Form>
             <div class="demo-drawer-footer">
-                <Button style="margin-right: 8px" @click="value3 = false">取消</Button>
-                <Button type="primary" @click="value3 = false">保存</Button>
+                <Button style="margin-right: 8px" @click="passwordDrawer=false">取消</Button>
+                <Button type="primary" @click="savePassword">保存</Button>
             </div>
         </Drawer>
     </div>
 </template>
 <script>
+    import axios from 'axios';
     export default{
         name:'modifyPersonalInformation',
         props:['userName'],
@@ -118,19 +119,38 @@
                         newPassword:'',
                         confirmPassword:''
                     }
-                }
-            }
-        },
-        computed:{
-            userInformation(){
-                return {
-                    name:this.gUserName.userName,
+                },
+                currentData:{
                     gender:'男',
                     creditGrade:'5',
                     location:'',
                     phoneNumber:'',
                     email:''
+                },
+                userType:'renter'
+            }
+        },
+        computed:{
+            userInformation(){
+                var data=this.currentData;
+                console.log("this.currentData change",this.currentData.gender);
+                return {
+                    gender:this.currentData.gender,
+                    creditGrade:this.currentData.creditGrade,
+                    location:this.currentData.location,
+                    phoneNumber:this.currentData.phoneNumber,
+                    email:this.currentData.email
                 }
+            },
+            currentUserName(){
+                var name='';
+                if(window.localStorage){
+                    var storage=window.localStorage;
+                    if(storage.getItem("userName")!=undefined){
+                        name=storage.getItem("userName");
+                    }
+                }
+                return this.userName||name;
             }
         },
         watch:{
@@ -141,17 +161,186 @@
 　　        　　deep: true
             }
         },
+        methods:{
+            callEditor(){
+                this.editPage=true;
+            },
+            cancelEdit(){
+                this.editPage=false;
+            },
+            saveEdit(){
+                var _this=this;
+                this.currentData.gender=this.editData.gender;
+                this.currentData.location=this.editData.location.province+'省'+this.editData.location.city+'市'+this.editData.location.area+'区';
+                this.currentData.phoneNumber=this.editData.phoneNumber;
+                this.currentData.email=this.editData.email+this.editData.emailType;
+                var gender=0;
+                if(this.currentData.gender=='男'){
+                    gender=1;
+                }else if(this.currentData.gender=='女'){
+                    gender=2;
+                }else{
+                    gender=0;
+                }
+                if(_this.userType=='renter'){
+                    //出租者修改信息
+                    axios.post('/api/renterInformation/modifyInformation',
+                    {RI_gender:gender,RI_credit_grade:_this.currentData.creditGrade,RI_location:_this.currentData.location,RI_phone_number:_this.currentData.phoneNumber,RI_email:_this.currentData.email,avator:'',user_name:_this.currentUserName})
+                    .then(function(respond){
+                        if(respond.data&&(respond.data.code=='1')){
+                            _this.$Message.success("修改成功!");
+                        }else{
+                            _this.$Message.error("修改失败!");
+                        }
+                    })
+                    .catch(function(err){
+                        console.log(err);
+                    })
+                }else{
+                    //求租者修改信息
+                    axios.post('/api/rentSeekingPerInformation/modifyInformation',
+                    {RSPI_gender:gender,RSPI_location:_this.currentData.location,RSPI_phone_number:_this.currentData.phoneNumber,RSPI_email:_this.currentData.email,avator:'',user_name:_this.currentUserName})
+                    .then(function(respond){
+                        if(respond.data&&(respond.data.code=='1')){
+                            _this.$Message.success("修改成功!");
+                        }else{
+                            _this.$Message.error("修改失败!");
+                        }
+                    })
+                    .catch(function(err){
+                        console.log(err);
+                    })
+                }
+                this.editPage=false;
+            },
+            savePassword(){
+                var _this=this;
+                if(this.editData.password.newPassword==this.editData.password.confirmPassword){
+                    if(this.editData.password.newPassword.length>=6){
+                        axios.post('/api/userInformation/modifyPasswordByUserName',{password:_this.editData.password.newPassword,user_name:_this.currentUserName})
+                        .then(function(respond){
+                            if(respond.data&&(respond.data.code=='1')){
+                                _this.$Message.success("修改密码成功!");
+                            }else{
+                                _this.$Message.error("修改密码失败!");
+                            }
+                            _this.passwordDrawer=false;
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                    }else{
+                        _this.$Message.success("密码长度应为6-20位!");
+                    }
+                }else{
+                    _this.$Message.success("新密码与确认密码不一致!");
+                }
+                
+            }
+        },
         beforeMount(){
             
         },
         mounted(){
+            var _this=this;
+            //获取用户类型
+            axios.get('/api/userInformation/getUserByName',{params:{user_name:_this.currentUserName}})
+            .then(function(respond){
+                if(respond.data.length!=0){
+                    var data=respond.data[0];
+                    if(data.user_type_renter!=undefined){
+                        if(data.user_type_renter==1){
+                            _this.userType='renter';
+                        }else{
+                            _this.userType='rentSeekingPer';
+                        }
+                        //获取用户类型完后根据用户类型获取信息
+                        if(_this.userType=='renter'){
+                        axios.get('/api/renterInformation/getInformation',{params:{user_name:_this.currentUserName}})
+                        .then(function(respond){
+                            if(respond.data.length){
+                                var data=respond.data[0];
+                                if(data.RI_gender!=undefined){
+                                    if(data.RI_gender==1){
+                                        _this.currentData.gender='男';
+                                    }else if(data.RI_gender==2){
+                                        _this.currentData.gender='女';
+                                    }else{
+                                        _this.currentData.gender='保密';
+                                    }
+                                }
+                                
+                                if(data.RI_credit_grade!=undefined){
+                                    _this.currentData.creditGrade=data.RI_credit_grade;
+                                }
+                                
+                                if(data.RI_location!=undefined){
+                                    _this.currentData.location=data.RI_location;
+                                }
+                                
+                                if(data.RI_phone_number!=undefined){
+                                    _this.currentData.phoneNumber=data.RI_phone_number;
+                                }
+
+                                if(data.RI_email!=undefined){
+                                    _this.currentData.email=data.RI_email;
+                                }
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                    }else{
+                        console.log("rent");
+                        axios.get('/api/rentSeekingPerInformation/getInformation',{params:{user_name:_this.currentUserName}})
+                        .then(function(respond){
+                            if(respond.data.length){
+                                var data=respond.data[0];
+                                if(data.RSPI_gender!=undefined){
+                                    if(data.RSPI_gender==1){
+                                        _this.currentData.gender='男';
+                                    }else if(data.RSPI_gender==2){
+                                        _this.currentData.gender='女';
+                                    }else{
+                                        _this.currentData.gender='保密';
+                                    }
+                                }
+                                
+                                
+                                if(data.RSPI_location!=undefined){
+                                    _this.currentData.location=data.RSPI_location;
+                                }
+                                
+                                if(data.RSPI_phone_number!=undefined){
+                                    _this.currentData.phoneNumber=data.RSPI_phone_number;
+                                }
+
+                                if(data.RSPI_email!=undefined){
+                                    _this.currentData.email=data.RSPI_email;
+                                }
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                    }
+
+
+                    }else{
+                        console.log("用户不存在!");
+                    }
+                }
+            })
+            .catch(function(err){
+                console.log(err);
+            })
+
+            
+
+
+            
             
         },
-        methods:{
-            callEditor(){
-                this.editPage=true;
-            }
-        }
     }
 </script>
 <style>
