@@ -4,58 +4,186 @@
         <div class="search">
             <Input search enter-button="搜索" placeholder="请输入搜索的关键词" />
         </div>
-        <div class="rent-post" v-for="(item,index) in postList">
-            <div class="rent-post-information"  @click="spreadPost(index)">
+        <div class="rent-post"  v-for="(item,index) in postList" :key="index">
+            <div class="rent-post-information" >
                 <Card :bordered="false">
-                    <p slot="title">Enmeng</p>
-                    <p slot="extra">2018/12/28 12:00:00</p>
+                    <p slot="title">{{item.user_name}}-帖子{{item.post_id}}</p>
+                    <p slot="extra">{{item.post_time}}</p>
                     <div class="all-rent-post-information">
-                        <p>房屋位置：广东省广州市天河区五山街道308号</p>
-                        <p>房屋大小：100平方米</p>
-                        <p>房屋类型：2室1厅1卫</p>
-                        <p>价格：2000元/月</p>
-                        <p>是否要求配备家具：是</p>
-                        <p>联系电话：131111111111</p>
-                        <p>邮箱：8888888@qq.com</p>
-                        <p>其他要求：希望该房屋位于交通方便地地段，能够配备些家具，超市与该房屋的距离不是很远</p>
+                            <p>房屋地址：{{item.PI_location}}</p>
+                            <p>房屋大小：{{item.house_size}}平方米</p>
+                            <p>房屋类型：{{item.house_type}}</p>
+                            <p>出租价格：{{item.expected_price}}元/月</p>
+                            <p>是否配备家具：{{item.furnished}}</p>
+                            <div v-if="spreadIndex==index">
+                                <p>出租日期：{{item.rent_time}}</p>
+                                <p>联系电话：{{item.RI_phone_number}}</p>
+                                <p>邮箱：{{item.RI_email}}</p>
+                                <p>其他要求：{{item.other_description}}</p>
+                                <p>图片展示</p>
+                            </div>
                     </div>
                 </Card>
-            </div>
-            <div class="rent-post-information"  @click="spreadPost(index)">
-                <Card :bordered="false">
-                    <p slot="title">Enmeng</p>
-                    <p slot="extra">2018/12/28 12:00:00</p>
-                    <div class="part-rent-post-information">
-                        <p>房屋位置：广东省广州市天河区五山街道308号</p>
-                        <p>房屋大小：100平方米</p>
-                        <p>房屋类型：2室1厅1卫</p>
-                        <p>价格：2000元/月</p>
-                        <p>......</p>
-                    </div>
-                </Card>
+                <div class="card-footer">
+                    <p class="show-detail" @click="spreadPost(index)" v-if="spreadIndex!=index">查看详情</p>
+                    <p class="show-detail" @click="foldPost(index)"  v-if="spreadIndex==index">收起详情</p>
+                    <p>关注人数：{{followedNumber[index]}}</p>
+                    <p class="set-to-invalid" @click="follow(index)" disabled="true">关注</p>
+                </div>
             </div>
         </div>
     </div>
 </template>
 <script>
+    import axios from 'axios';
     export default{
         name:'showAllPost',
         data(){
             return {
-                selectValue:'1',
-                postCollapse:'collapse',
-                postList:[
-                   {name:'1'},
-                   {name:'1'},
-                   {name:'1'},
-                   {name:'1'},
-                ]
+                spreadIndex:-1,
+                list:[],
+                number:[],
+            }
+        },
+        computed:{
+            currentUserName(){
+                var name='';
+                if(window.localStorage){
+                    var storage=window.localStorage;
+                    if(storage.getItem("userName")!=undefined){
+                        name=storage.getItem("userName");
+                    }
+                }
+                return name;
+            },
+            postList(){
+                var list=[];
+                if(this.list.length){
+                    list.length=this.list.length;
+                    for(let i=0;i<this.list.length;i++){
+                        list[i]=Object.assign({},this.list[i]);
+                        if(list[i].furnished==1){
+                            list[i].furnished='是';
+                        }else{
+                            list[i].furnished='否';
+                        }
+                        var postTime = new Date(list[i].post_time);
+                        var timeStr=postTime.getFullYear() + '-' + (postTime.getMonth() + 1) + '-' + postTime.getDate()+' '+postTime.getHours()+':'+postTime.getMinutes()+':'+postTime.getSeconds();
+                        list[i].post_time=timeStr;
+                        
+                    }
+                }
+                console.log("listChange",list)
+                return list;
+            },
+            followedNumber(){
+                var list=[];
+                if(this.number.length){
+                    list.length=this.number.length;
+                    for(let i=0;i<this.number.length;i++){
+                        list[i]=this.number[i];
+                        
+                    }
+                }
+                console.log("list",list)
+                return list;
             }
         },
         methods:{
             spreadPost(index){
-                console.log(index);
-            }
+                this.spreadIndex=index;
+            },
+            foldPost(index){
+                this.spreadIndex=-1;
+            },
+            follow(index){
+                var _this=this;
+                var postId=this.list[index].post_id;
+                axios.post('/api/rentSeekingPerFollowedPost/insertRentSeekingPerPost',{user_name:_this.currentUserName,post_id:postId})
+                .then(function(respond){
+                    if(respond.data&&respond.data.code=='1'){
+                        _this.$Message.success("关注成功!");
+                    }else{
+                        _this.$Message.error("关注失败!");
+                    }
+                })
+                .catch(function(err){
+                    console.log(err);
+                })
+                //重新获取关注人数
+                axios.get('/api/postInformation/getAllPost',{params:{}})
+                .then(function(respond){
+                    if(respond.data.length!=0){
+                        console.log("All renter post",respond.data.length);
+                        _this.list.length=0;
+                        for(let i=0;i<respond.data.length;i++){
+                            var item=Object.assign({},respond.data[i]);
+                            _this.list.push(item);
+                        }
+
+                        // 获取关注该帖子的人数
+                        for(let i=0;i<respond.data.length;i++){
+                                axios.get('/api/postInformation/getCountFollower',{params:{post_id:_this.list[i].post_id}})
+                                .then(function(res){
+                                    if(res.data.length!=0&&res.data[0]&&(res.data[0].followedNumber!=undefined)){
+                                        _this.number.push(res.data[0].followedNumber);
+                                    }else{
+                                        _this.number=[];
+                                    }
+                                    
+                                })
+                                .catch(function(err){
+                                    console.log(err);
+                                })
+                        }
+                    }else{
+                        _this.list=[]
+                    }
+
+                    
+                })
+                .catch(function(err){
+                    console.log(err);
+                })
+                }
+        },
+        mounted(){
+            var _this=this;
+            //获取系统的所有帖子信息
+            axios.get('/api/postInformation/getAllPost')
+            .then(function(respond){
+                if(respond.data.length!=0){
+                    console.log("All renter post",respond.data.length);
+                    _this.list.length=0;
+                    for(let i=0;i<respond.data.length;i++){
+                        var item=Object.assign({},respond.data[i]);
+                        _this.list.push(item);
+                    }
+
+                    // 获取关注该帖子的人数
+                    for(let i=0;i<respond.data.length;i++){
+                            axios.get('/api/postInformation/getCountFollower',{params:{post_id:_this.list[i].post_id}})
+                            .then(function(res){
+                                if(res.data.length!=0&&res.data[0]&&(res.data[0].followedNumber!=undefined)){
+                                    _this.number.push(res.data[0].followedNumber);
+                                }else{
+                                    _this.number=[];
+                                }
+                                
+                            })
+                            .catch(function(err){
+                                console.log(err);
+                            })
+                    }
+                }else{
+                    _this.list=[]
+                }
+
+                
+            })
+            .catch(function(err){
+                console.log(err);
+            })
         }
     }
 </script>
@@ -80,5 +208,14 @@
         background:#eee;
         padding: 20px;
         cursor: pointer;
+    }
+    .card-footer{
+        color: #2D8CF0;
+        padding:10px 0px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        
     }
 </style>

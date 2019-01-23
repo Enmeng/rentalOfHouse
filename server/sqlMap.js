@@ -25,16 +25,16 @@ var sqlMap = {
     //房屋信息的相关操作
     postInformation:{
         fillInformation:'insert into postInformation(user_name,post_time,is_available,PI_location,house_size,house_type,expected_price,furnished,rent_time,other_description) values(?,?,?,?,?,?,?,?,?,?)',//填写房屋信息表
-        getUnReleasePostByName:'select post_id,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description,picture_location from postInformation natural join renterPostPicture natural join renterInformation where  is_release=false and is_available=true and user_name= ?',//获取没有发布的帖子信息
+        getUnReleasePostByName:'select post_id,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description from postInformation natural join renterInformation where  is_release=false and is_available=true and user_name= ?',//获取没有发布的帖子信息
         setPostRelease:'update postInformation set post_time= ?,is_release=true where post_id= ?',//发布后更新发布时间和显示为已发布
-        getAvailPostByName:'select user_name,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description,picture_location from postInformation natural join renterPostPicture natural join renterInformation where user_name=? and is_available=true and is_release=true',//获取有效的帖子信息
+        getAvailPostByName:'select post_id,user_name,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description from postInformation natural join renterInformation where user_name=? and is_available=true and is_release=true',//获取有效的帖子信息
         setPostUnAvail:'update postInformation set is_available=false where post_id= ?',//根据帖子id设置帖子无效
-        getAllPostByName:'select post_id,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,is_release,is_available,other_description,picture_location from postInformation natural join renterPostPicture natural join renterInformation where user_name= ?',//获取某个出租者所有的帖子信息
+        getAllPostByName:'select post_id,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,is_release,is_available,other_description from postInformation  natural join renterInformation where user_name= ?',//获取某个出租者所有的帖子信息
         getAllRentSeekingPer:'select post_id,user_name,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RSPI_phone_number,RSPI_email,other_description from postInformation natural join userInformation natural join rentSeekingPerInformation where user_type_renter=false',//获取所有的求租者的帖子信息
-        getCountFollower:'select count(distinct user_name) from rentSeekingPerFollowedPost where post_id= ?',//根据post_id计算每个帖子的关注人数
+        getCountFollower:'select count(distinct user_name) as followedNumber from rentSeekingPerFollowedPost where post_id= ?',//根据post_id计算每个帖子的关注人数
         getAllPost:'select post_id,user_name,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description from postInformation natural join userInformation natural join renterInformation where user_type_renter=true and is_release=true and is_available=true',//获取系统的所有出租者的已发布的有效的帖子信息
         getFollowedPostByName:'select post_id from rentSeekingPerFollowedPost where user_name= ?',//根据用户名获取帖子id
-        getFollowedPostInforById:'select user_name, post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description,picture_location from postInformation natural join renterPostPicture natural join renterInformation where post_id= ?',//根据帖子id获取帖子的所有信息
+        getFollowedPostInforById:'select user_name, post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description from postInformation natural join renterInformation where post_id= ?',//根据帖子id获取帖子的所有信息
         
     },
     //求租者关注的帖子信息
@@ -47,6 +47,7 @@ var sqlMap = {
     //保存出租者上传的图片
     renterPostPicture:{
         setPicture:'insert into renterPostPicture(post_id,picture_location) values(?,?)',//出租者每次添加帖子后就帖子图片记录
+        getPicture:'select picture_location from renterPostPicture where post_id=?',//获取图片信息
     }
 }
  

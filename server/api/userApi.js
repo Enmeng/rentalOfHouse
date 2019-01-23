@@ -466,7 +466,19 @@ router.post('/renterPostPicture/setPicture', (req,res) => {
     })
 })
 
-
+//获取图片信息
+router.get('/renterPostPicture/getPicture', (req,res) => {
+    var sql=$sql.renterPostPicture.getPicture;
+    var params = req.query||req.params;
+    conn.query(sql, [params.post_id], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonSelect(res, result);
+        }
+    })
+})
 
 
 

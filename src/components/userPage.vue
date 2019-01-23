@@ -2,7 +2,7 @@
     <div class="user-page">
     <title-component :userName="userInformation.userName"></title-component>
     <userMenu :userInformation="userInformation" @change-componentPage="userChangeComponentPage"></userMenu>
-    <div class="user-page-content" v-if="userInformation.userType=='renter'">
+    <div class="user-page-content" v-if="userType=='renter'">
         <searchRentSeekingPer v-if="menuItem=='searchRentSeekingPer'"></searchRentSeekingPer>
         <modifyPersonalInformation v-else-if="menuItem=='modifyPersonalInformation'"></modifyPersonalInformation>
         <fillHouseInformation v-else-if="menuItem=='fillHouseInformation'"></fillHouseInformation>
@@ -20,6 +20,7 @@
     </div>
 </template>
 <script>
+    import axios from 'axios';
     import Router from 'vue-router'
     import titleComponent from '@/components/titleComponent';
     import userMenu from '@/components/userMenu';
@@ -55,10 +56,25 @@
                     userName:'',//用户名
                     userType:'renter',//用户类型，出租者/求租者
                 },
-                pageName:'modifyPersonalInformation'//当前的菜单选项，默认为修改个人信息页
+                pageName:'modifyPersonalInformation',//当前的菜单选项，默认为修改个人信息页
+                user_type:'renter',
             }
         },
         computed:{
+            userType(){
+                return this.user_type;
+              
+            },
+            currentUserName(){
+                var name='';
+                if(window.localStorage){
+                    var storage=window.localStorage;
+                    if(storage.getItem("userName")!=undefined){
+                        name=storage.getItem("userName");
+                    }
+                }
+                return name;
+            },
             menuItem(){
                 let pageName=this.pageName;
                 return pageName;
@@ -73,6 +89,24 @@
             }
         },
         mounted(){
+            var _this=this;
+            axios.get('/api/userInformation/getUserByName',{params:{user_name:_this.currentUserName}})
+                .then(function(respond){
+                   if(respond.data.length!=0){
+                       var data=respond.data[0];
+                       console.log("type,",data)
+                     if(data.user_type_renter==1){
+                         console.log("renter")
+                         _this.user_type='renter';
+                     }else{
+                        console.log("rentSeeking")
+                        _this.user_type='rentSeeking';
+                     }
+                    }
+                })
+                .catch(function(err){
+                    console.log(err);
+            })
             console.log("this,$router.query",this.$route.query);
             console.log("this.$route.params",this.$route.params);
             if(this.$route.query && this.$route.query.userName && this.$route.params && this.$route.params.userType){

@@ -66,6 +66,7 @@
     </div>
 </template>
 <script>
+    import axios from 'axios';
     export default{
         name:'userMenu',
         props:['userInformation'],
@@ -83,20 +84,31 @@
                 rentSeekingPerMenu:[
                     {name:'1-1',alias:'modifyPersonalInformation'},
                     {name:'3-1',alias:'fillHouseInformation'},
-                    {name:'4-1',alias:'showFollowedPost'},
-                    {name:'4-2',alias:'showAllPost'},
+                    {name:'4-1',alias:'showAllPost'},
+                    {name:'4-2',alias:'showFollowedPost'},
                     {name:'5-1',alias:'setCreditGrade'}
-                ]
+                ],
+                user_type:'renter',
             }
         },
         computed:{
             userType(){
-                if(this.userInformation && this.userInformation.userType){
-                   return this.userInformation.userType; //从登录或者注册页面传递
-                }else{
-                    return 'renter';
+                // if(this.userInformation && this.userInformation.userType){
+                //    return this.userInformation.userType; //从登录或者注册页面传递
+                // }else{
+                    return this.user_type;
+                // }
+            },
+            currentUserName(){
+                var name='';
+                if(window.localStorage){
+                    var storage=window.localStorage;
+                    if(storage.getItem("userName")!=undefined){
+                        name=storage.getItem("userName");
+                    }
                 }
-            }
+                return name;
+            },
         },
         methods:{
             menuModifyInformation(itemName){
@@ -125,7 +137,24 @@
             
         },
         mounted(){
-            
+            var _this=this;
+             axios.get('/api/userInformation/getUserByName',{params:{user_name:_this.currentUserName}})
+                .then(function(respond){
+                   if(respond.data.length!=0){
+                       var data=respond.data[0];
+                       console.log("type,",data)
+                     if(data.user_type_renter==1){
+                         console.log("renter")
+                         _this.user_type='renter';
+                     }else{
+                        console.log("rentSeeking")
+                        _this.user_type='rentSeeking';
+                     }
+                    }
+                })
+                .catch(function(err){
+                    console.log(err);
+                })
         
         }
     }

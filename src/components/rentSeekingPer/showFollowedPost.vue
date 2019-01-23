@@ -1,7 +1,7 @@
 <template>
     <div class="show-post">
         <div class="show-post-title">
-            <p>帖子列表</p>
+            <p>已帖子列表</p>
         </div>
         <div class="show-post-content">
             <div class="show-post-information"  @click="spreadPost(index)">
