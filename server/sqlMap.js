@@ -43,6 +43,10 @@ var sqlMap = {
         setCredit:'update rentSeekingPerFollowedPost set RSPFP_credit_grade= ? where post_id=? and user_name= ?',//求租者对用户进行评价
         getUserCredit:'select RI_credit_grade from renterInformation where user_name= ?',//根据用户名称获取用户信用评分
         setUserCredit:'update renterInformation set RI_credit_grade= ? where user_name= ?',//根据用户名更新评分
+        getPostByIdAndName:'select * from rentSeekingPerFollowedPost where post_id= ? and user_name= ?',//根据用户名和帖子id判断用户是否关注
+        getAvgCredit:'select avg(RSPFP_credit_grade) as avg_credit from rentSeekingPerFollowedPost where post_id=?',//获取某一个帖子的平均得分
+
+        
     },
     //保存出租者上传的图片
     renterPostPicture:{

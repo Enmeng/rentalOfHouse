@@ -28,7 +28,7 @@
                     <p class="show-detail" @click="spreadPost(index)" v-if="spreadIndex!=index">查看详情</p>
                     <p class="show-detail" @click="foldPost(index)"  v-if="spreadIndex==index">收起详情</p>
                     <p>关注人数：{{followedNumber[index]}}</p>
-                    <p class="set-to-invalid" @click="follow(index)" disabled="true">关注</p>
+                    <p class="set-to-invalid" @click="follow(index)">关注</p>
                 </div>
             </div>
         </div>
@@ -110,41 +110,67 @@
                 .catch(function(err){
                     console.log(err);
                 })
-                //重新获取关注人数
-                axios.get('/api/postInformation/getAllPost',{params:{}})
-                .then(function(respond){
-                    if(respond.data.length!=0){
-                        console.log("All renter post",respond.data.length);
-                        _this.list.length=0;
-                        for(let i=0;i<respond.data.length;i++){
-                            var item=Object.assign({},respond.data[i]);
-                            _this.list.push(item);
-                        }
+                
+            //重新获取系统的所有帖子信息
+            _this.list=[];
+            axios.get('/api/postInformation/getAllPost')
+            .then(function(respond){
+                if(respond.data.length!=0){
+                    console.log("All renter post",respond.data.length);
+                    _this.list.length=0;
+                    for(let i=0;i<respond.data.length;i++){
+                        var item=Object.assign({},respond.data[i]);
+                        
+                        (function(postItem){
+                            //判断该帖子该用户是否关注，如果已经关注就不显示
+                        axios.get('/api/rentSeekingPerFollowedPost/getPostByIdAndName',{params:{post_id:postItem.post_id,user_name:_this.currentUserName}})
+                        .then(function(postRes){
+                            if(postRes.data.length==0){
+                                _this.list.push(postItem);
+                                console.log("postId,",postItem.post_id);
+                                // 获取关注该帖子的人数
+                                for(let i=0;i<respond.data.length;i++){
+                                        axios.get('/api/postInformation/getCountFollower',{params:{post_id:postItem.post_id}})
+                                        .then(function(res){
+                                            if(res.data.length!=0&&res.data[0]&&(res.data[0].followedNumber!=undefined)){
+                                                
+                                                _this.number.push(res.data[0].followedNumber);
+                                            }else{
+                                                _this.number=[];
+                                            }
+                                            
+                                        })
+                                        .catch(function(err){
+                                            console.log(err);
+                                        })
+                                }
+                            }else{
+                                console.log(_this.currentUserName+' 已经关注了 '+item.post_id);
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                        })(item);//函数
 
-                        // 获取关注该帖子的人数
-                        for(let i=0;i<respond.data.length;i++){
-                                axios.get('/api/postInformation/getCountFollower',{params:{post_id:_this.list[i].post_id}})
-                                .then(function(res){
-                                    if(res.data.length!=0&&res.data[0]&&(res.data[0].followedNumber!=undefined)){
-                                        _this.number.push(res.data[0].followedNumber);
-                                    }else{
-                                        _this.number=[];
-                                    }
-                                    
-                                })
-                                .catch(function(err){
-                                    console.log(err);
-                                })
-                        }
-                    }else{
-                        _this.list=[]
-                    }
+
+
+
+
+                        
+                    }//for循环结束
 
                     
-                })
-                .catch(function(err){
-                    console.log(err);
-                })
+                }else{
+                    _this.list=[];
+                    _this.number=[];
+                }
+
+                
+            })
+            .catch(function(err){
+                console.log(err);
+            })
                 }
         },
         mounted(){
@@ -157,24 +183,47 @@
                     _this.list.length=0;
                     for(let i=0;i<respond.data.length;i++){
                         var item=Object.assign({},respond.data[i]);
-                        _this.list.push(item);
-                    }
-
-                    // 获取关注该帖子的人数
-                    for(let i=0;i<respond.data.length;i++){
-                            axios.get('/api/postInformation/getCountFollower',{params:{post_id:_this.list[i].post_id}})
-                            .then(function(res){
-                                if(res.data.length!=0&&res.data[0]&&(res.data[0].followedNumber!=undefined)){
-                                    _this.number.push(res.data[0].followedNumber);
-                                }else{
-                                    _this.number=[];
+                        
+                        (function(postItem){
+                            //判断该帖子该用户是否关注，如果已经关注就不显示
+                        axios.get('/api/rentSeekingPerFollowedPost/getPostByIdAndName',{params:{post_id:postItem.post_id,user_name:_this.currentUserName}})
+                        .then(function(postRes){
+                            if(postRes.data.length==0){
+                                _this.list.push(postItem);
+                                console.log("postId,",postItem.post_id);
+                                // 获取关注该帖子的人数
+                                for(let i=0;i<respond.data.length;i++){
+                                        axios.get('/api/postInformation/getCountFollower',{params:{post_id:postItem.post_id}})
+                                        .then(function(res){
+                                            if(res.data.length!=0&&res.data[0]&&(res.data[0].followedNumber!=undefined)){
+                                                
+                                                _this.number.push(res.data[0].followedNumber);
+                                            }else{
+                                                _this.number=[];
+                                            }
+                                            
+                                        })
+                                        .catch(function(err){
+                                            console.log(err);
+                                        })
                                 }
-                                
-                            })
-                            .catch(function(err){
-                                console.log(err);
-                            })
-                    }
+                            }else{
+                                console.log(_this.currentUserName+' 已经关注了 '+item.post_id);
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        })
+                        })(item);//函数
+
+
+
+
+
+                        
+                    }//for循环结束
+
+                    
                 }else{
                     _this.list=[]
                 }

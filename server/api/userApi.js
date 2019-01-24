@@ -480,6 +480,32 @@ router.get('/renterPostPicture/getPicture', (req,res) => {
     })
 })
 
+//根据用户名和帖子id判断用户是否关注
+router.get('/rentSeekingPerFollowedPost/getPostByIdAndName', (req,res) => {
+    var sql=$sql.rentSeekingPerFollowedPost.getPostByIdAndName;
+    var params = req.query||req.params;
+    conn.query(sql, [params.post_id,params.user_name], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonSelect(res, result);
+        }
+    })
+})
 
+//获取某一个帖子的平均得分
+router.get('/rentSeekingPerFollowedPost/getAvgCredit', (req,res) => {
+    var sql=$sql.rentSeekingPerFollowedPost.getAvgCredit;
+    var params = req.query||req.params;
+    conn.query(sql, [params.post_id], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonSelect(res, result);
+        }
+    })
+})
 
 module.exports = router;
