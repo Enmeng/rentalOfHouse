@@ -4,6 +4,11 @@ var router = express.Router();
 var mysql = require('mysql');
 var $sql = require('../sqlMap');
  
+
+
+var multer = require('multer');
+var fs = require('fs');
+var path = require('path');
 // 连接数据库
 var conn = mysql.createConnection(models.mysql);
 conn.connect();
@@ -452,7 +457,7 @@ router.post('/rentSeekingPerFollowedPost/setUserCredit', (req,res) => {
 
 
 //保存出租者上传的图片
-//出租者每次添加帖子后就帖子图片记录
+//出租者每次添加帖子后就添加图片记录
 router.post('/renterPostPicture/setPicture', (req,res) => {
     var sql=$sql.renterPostPicture.setPicture;
     var params = req.body;
@@ -506,6 +511,93 @@ router.get('/rentSeekingPerFollowedPost/getAvgCredit', (req,res) => {
             jsonSelect(res, result);
         }
     })
+})
+
+//根据用户名和帖子保存时间获取帖子id
+router.get('/postInformation/getPostIdByNameTime', (req,res) => {
+    var sql=$sql.postInformation.getPostIdByNameTime;
+    var params = req.query||req.params;
+    conn.query(sql, [params.user_name,params.post_time], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonSelect(res, result);
+        }
+    })
+})
+
+
+// router.post('/picture', (req,res) => {
+//     // var sql=$sql.renterPostPicture.setPicture;
+//     // var params = req.body;
+//     // conn.query(sql, [], function(err,result) {
+//     //     if (err) {
+//     //         console.log(err);
+//     //     }
+//     //     if (result) {
+//     //         // jsonModify(res, result);
+//     //         console.log(result);
+//     //     }
+//     // })
+//     // console.log("req",req);
+//     // console.log("res",res);
+//     console.log("访问数据库");
+//     console.log("req.file",req.url);
+// })
+
+
+
+//文件上传测试
+ //multer文件的硬盘存储模式
+ var storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        //先创建路径在保存
+        createFileDirectory('../static/upload');
+        //指定文件保存路径
+        // cb(null, 'upload/');
+        cb(null, '../static/upload/');
+    },
+    filename: function(req, file, cb) {
+        // console.log(file)
+            // 将保存文件名设置为 时间戳 + 文件原始名，比如 151342376785-123.jpg
+        cb(null, Date.now() + '-' + file.originalname);
+
+
+    }
+})
+//创建文件夹
+var createFileDirectory = function(path) {
+    try {
+        //检测文件夹是否存在，不存在抛出错误
+        fs.accessSync(path);
+    } catch (error) {
+        //创建文件夹
+        fs.mkdirSync(path);
+    }
+}
+var upload = multer({
+    storage: storage
+});
+router.post('/file', upload.single('file'), function(req, res) {
+    let avatar = req.file;
+    console.log("avatar:",avatar)
+    console.log("req.body:",req.body)
+    if (avatar) {
+        // fs.unlink(avatar.path, (e) => {
+        //     if (e) {
+        //         console.log('文件操作失败')
+        //         throw e;
+        //     } else
+        //         console.log('文件:' + avatar.path + '删除成功！');
+        // });
+    }
+    console.log("fileName:",avatar.filename)
+    // res.status(200).send('上传成功');
+    //返回图片的文件名
+    var result=[{fileName:avatar.filename}];
+    jsonSelect(res, result);
+
 })
 
 module.exports = router;

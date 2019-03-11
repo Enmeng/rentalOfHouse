@@ -20,6 +20,9 @@
                                 <p>邮箱：{{item.RI_email}}</p>
                                 <p>其他要求：{{item.other_description}}</p>
                                 <p>图片展示</p>
+                                <div class="imageList" v-if="imageList[index]&&imageList[index].length&&imageList[index].length!=0">
+                                    <img v-for="i in imageList[index]" :src="i"></img>
+                                </div>
                             </div>
                     </div>
                 </Card>
@@ -42,7 +45,8 @@
                 spreadIndex:-1,
                 list:[],
                 number:[],
-                postId:[]
+                postId:[],
+                img:[]
            }
         },
         computed:{
@@ -98,6 +102,16 @@
                     }
                 }
                 console.log("postIdList",list)
+                return list;
+            },
+            imageList(){
+                var list=[];
+                if(this.img.length){
+                    list.length=this.img.length;
+                    for(let i=0;i<this.img.length;i++){
+                        list[i]=this.img[i];
+                    }
+                }
                 return list;
             }
         },
@@ -156,11 +170,37 @@
                        })(item);
                      }
 
+                     //获取图片列表
+                     for(let i=0;i<respond.data.length;i++){
+                                    axios.get('/api/renterPostPicture/getPicture',{params:{post_id:_this.postId[i].post_id}})
+                                        .then(function(res){
+                                            if(res.data.length!=0){
+                                                var imageList=[];
+                                                imageList.length=0;
+                                                for(let j=0;j<res.data.length;j++){
+                                                    var img=res.data[j].picture_location;
+                                                    img="../../static/upload/"+img;
+                                                    console.log(_this.list[i].post_id+" 的第 "+(j+1)+" 图片的位置 "+img);
+                                                    imageList.push(img);
+                                                }
+                                                _this.img.push(imageList);
+                                                
+                                            }else{
+                                                console.log("没有图片");
+                                                _this.img.push([]);
+                                            }
+                                        })
+                                        .catch(function(err){
+                                            console.log("获取图片列表失败");
+                                        })
+                                }
+
 
                     
                 }else{
                     _this.list=[];
                     _this.postId=[];
+                    // _this.img=[];
                 }
 
                 
@@ -204,5 +244,11 @@
         justify-content: space-between;
         align-items: center;
         
+    }
+    .imageList{
+        width:90%;
+    }
+    .imageList>img{
+        width:100%;
     }
 </style>

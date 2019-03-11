@@ -35,7 +35,7 @@ var sqlMap = {
         getAllPost:'select post_id,user_name,post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description from postInformation natural join userInformation natural join renterInformation where user_type_renter=true and is_release=true and is_available=true',//获取系统的所有出租者的已发布的有效的帖子信息
         getFollowedPostByName:'select post_id from rentSeekingPerFollowedPost where user_name= ?',//根据用户名获取帖子id
         getFollowedPostInforById:'select user_name, post_time,PI_location,house_size,house_type,expected_price,furnished,rent_time,RI_phone_number,RI_email,other_description from postInformation natural join renterInformation where post_id= ?',//根据帖子id获取帖子的所有信息
-        
+        getPostIdByNameTime:'select post_id from postInformation where user_name=? and post_time=?'//根据用户名和帖子保存时间获取帖子id
     },
     //求租者关注的帖子信息
     rentSeekingPerFollowedPost:{
@@ -50,7 +50,7 @@ var sqlMap = {
     },
     //保存出租者上传的图片
     renterPostPicture:{
-        setPicture:'insert into renterPostPicture(post_id,picture_location) values(?,?)',//出租者每次添加帖子后就帖子图片记录
+        setPicture:'insert into renterPostPicture(post_id,picture_location) values(?,?)',//出租者每次添加帖子后就添加图片记录
         getPicture:'select picture_location from renterPostPicture where post_id=?',//获取图片信息
     }
 }

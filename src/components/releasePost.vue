@@ -20,6 +20,9 @@
                             <p>邮箱：{{item.RI_email}}</p>
                             <p>其他要求：{{item.other_description}}</p>
                             <p>图片展示</p>
+                            <div class="imageList" v-if="item.imageList!=undefined">
+                                <img v-for="i in item.imageList" :src="i"></img>
+                            </div>
                         </div>
                     </div>
                 </Card>
@@ -110,21 +113,48 @@
                 })
                 //重新获取未发布的帖子
                 axios.get('/api/postInformation/getUnReleasePostByName',{params:{user_name:this.currentUserName}})
-                .then(function(respond){
-                    if(respond.data.length!=0){
-                        _this.list.length=0;
-                        for(let i=0;i<respond.data.length;i++){
-                            var item=Object.assign({},respond.data[i]);
-                            _this.list.push(item);
-                        }
-                    }else{
-                        _this.list=[];
+            .then(function(respond){
+                if(respond.data.length!=0){
+                    _this.list.length=0;
+                    for(let i=0;i<respond.data.length;i++){
+                        var item=Object.assign({},respond.data[i]);
+                        //获取图片列表
+                        (function(item){
+                            axios.get('/api/renterPostPicture/getPicture',{params:{post_id:item.post_id}})
+                            .then(function(res){
+                                if(res.data.length!=0){
+                                    var imageList=[];
+                                    imageList.length=0;
+                                    for(let j=0;j<res.data.length;j++){
+                                        var img=res.data[j].picture_location;
+                                        img="../../static/upload/"+img;
+                                        console.log(item.post_id+" 的第 "+(j+1)+" 图片的位置 "+img);
+                                        imageList.push(img);
+                                    }
+                                    item.imageList=imageList;
+                                    
+                                }else{
+                                    console.log("没有图片");
+                                    
+                                }
+                                console.log("帖子信息：",item);
+                                _this.list.push(item);
+                            })
+                            .catch(function(err){
+                                console.log("获取图片列表失败");
+                            })
+                           
+                        })(item);
+                        
+                        // _this.list.push(item);
+                        
                     }
-                })
-                .catch(function(err){
-                    console.log(err);
-                })
-            }
+                }
+            })
+            .catch(function(err){
+                console.log(err);
+            })
+          }
         },
         mounted(){
             var _this=this;
@@ -135,7 +165,36 @@
                     _this.list.length=0;
                     for(let i=0;i<respond.data.length;i++){
                         var item=Object.assign({},respond.data[i]);
-                        _this.list.push(item);
+                        //获取图片列表
+                        (function(item){
+                            axios.get('/api/renterPostPicture/getPicture',{params:{post_id:item.post_id}})
+                            .then(function(res){
+                                if(res.data.length!=0){
+                                    var imageList=[];
+                                    imageList.length=0;
+                                    for(let j=0;j<res.data.length;j++){
+                                        var img=res.data[j].picture_location;
+                                        img="../../static/upload/"+img;
+                                        console.log(item.post_id+" 的第 "+(j+1)+" 图片的位置 "+img);
+                                        imageList.push(img);
+                                    }
+                                    item.imageList=imageList;
+                                    
+                                }else{
+                                    console.log("没有图片");
+                                    
+                                }
+                                console.log("帖子信息：",item);
+                                _this.list.push(item);
+                            })
+                            .catch(function(err){
+                                console.log("获取图片列表失败");
+                            })
+                           
+                        })(item);
+                        
+                        // _this.list.push(item);
+                        
                     }
                 }
             })
@@ -178,5 +237,11 @@
         justify-content: space-between;
         align-items: center;
         
+    }
+    .imageList{
+        width:90%;
+    }
+    .imageList>img{
+        width:100%;
     }
 </style>
