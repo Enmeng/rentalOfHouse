@@ -273,9 +273,9 @@
     .post-item{
         height: 600px;
         width: 100%;
-        display: flex;
+        /* display: flex;
         flex-direction: column;
-        justify-content: flex-start;
+        justify-content: flex-start; */
         margin-top: 40px;
     }
     .post-information{
@@ -285,7 +285,7 @@
         background:#eee;
         padding: 20px;
         cursor: pointer;
-        height: 500px;
+        height: 300px;
         overflow-y: auto;
         border: 1px solid #eee;
     }
@@ -317,5 +317,9 @@
     }
     .imageList>img{
         width:100%;
+    }
+    /* iview */
+    .btn.ivu-btn.ivu-btn-primary{
+        height: 40px;
     }
 </style>

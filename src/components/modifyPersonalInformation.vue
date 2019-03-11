@@ -3,16 +3,22 @@
         <!-- 显示用户个人信息 -->
         <div class="personal-information">
             <Card :bordered="false">
-                <p slot="title"><Avatar style="background-color: #87d068;" icon="ios-person" size="small" />用户信息</p>
+                <p slot="title" class="title"><img :src="currentAvatar" class="user_avatar"></img><span>用户信息</span></p>
                 <p slot="extra" class="edit" @click="callEditor">编辑<Icon type="ios-create-outline" /></p>
                 <div class="show-information">
                     <div class="information-item">
-                        <p>用户名：{{currentUserName}}</p>
-                        <p>性别：{{userInformation.gender}}</p>
-                        <p v-if="userType=='renter'">信用评分：{{userInformation.creditGrade}}</p>
-                        <p>地理位置：{{userInformation.location}}</p>
-                        <p>联系电话：{{userInformation.phoneNumber}}</p>
-                        <p>邮箱：{{userInformation.email}}</p>
+                        <h3>基本信息</h3>
+                        <div class="information-block">
+                            <p>用户名：{{currentUserName}}</p>
+                            <p>性别：{{userInformation.gender}}</p>
+                            <p v-if="userType=='renter'">信用评分：{{userInformation.creditGrade}}</p>
+                        </div>
+                        <h3>联系信息</h3>
+                        <div class="information-block">
+                            <p>地理位置：{{userInformation.location}}</p>
+                            <p>联系电话：{{userInformation.phoneNumber}}</p>
+                            <p>邮箱：{{userInformation.email}}</p>
+                        </div>
                     </div>
                 </div>
             </Card>
@@ -27,6 +33,9 @@
             class="editor-drawer"
         >
             <Form :model="editData">
+                <FormItem label="头像">
+                    <input type="file" name="file" accept=".jpg, .jpeg, .png" @change="uploadAvatar">
+                </FormItem>
                 <FormItem label="性别">
                     <RadioGroup v-model="editData.gender">
                         <Radio label="男"></Radio>
@@ -92,6 +101,7 @@
 </template>
 <script>
     import axios from 'axios';
+    import {eventBus} from '../eventBus'
     export default{
         name:'modifyPersonalInformation',
         props:['userName'],
@@ -127,7 +137,8 @@
                     phoneNumber:'',
                     email:''
                 },
-                userType:'renter'
+                userType:'renter',
+                avatarName:'',
             }
         },
         computed:{
@@ -151,6 +162,15 @@
                     }
                 }
                 return this.userName||name;
+            },
+            currentAvatar(){
+                var location='';
+                if(this.avatarName!=''){
+                    location='../../static/upload/'+this.avatarName;
+                }else{
+                    location='../../static/user.png';
+                }
+                return location;
             }
         },
         watch:{
@@ -185,10 +205,13 @@
                 if(_this.userType=='renter'){
                     //出租者修改信息
                     axios.post('/api/renterInformation/modifyInformation',
-                    {RI_gender:gender,RI_credit_grade:_this.currentData.creditGrade,RI_location:_this.currentData.location,RI_phone_number:_this.currentData.phoneNumber,RI_email:_this.currentData.email,avator:'',user_name:_this.currentUserName})
+                    {RI_gender:gender,RI_credit_grade:_this.currentData.creditGrade,RI_location:_this.currentData.location,RI_phone_number:_this.currentData.phoneNumber,RI_email:_this.currentData.email,avatar:_this.avatarName||'',user_name:_this.currentUserName})
                     .then(function(respond){
                         if(respond.data&&(respond.data.code=='1')){
                             _this.$Message.success("修改成功!");
+                            let user_type=_this.userType;
+                            eventBus.$emit("changeAvatar",{user_type});
+                            
                         }else{
                             _this.$Message.error("修改失败!");
                         }
@@ -199,10 +222,12 @@
                 }else{
                     //求租者修改信息
                     axios.post('/api/rentSeekingPerInformation/modifyInformation',
-                    {RSPI_gender:gender,RSPI_location:_this.currentData.location,RSPI_phone_number:_this.currentData.phoneNumber,RSPI_email:_this.currentData.email,avator:'',user_name:_this.currentUserName})
+                    {RSPI_gender:gender,RSPI_location:_this.currentData.location,RSPI_phone_number:_this.currentData.phoneNumber,RSPI_email:_this.currentData.email,avatar:_this.avatarName||'',user_name:_this.currentUserName})
                     .then(function(respond){
                         if(respond.data&&(respond.data.code=='1')){
                             _this.$Message.success("修改成功!");
+                            let user_type=_this.userType;
+                            eventBus.$emit("changeAvatar",{user_type});
                         }else{
                             _this.$Message.error("修改失败!");
                         }
@@ -236,7 +261,36 @@
                     _this.$Message.success("新密码与确认密码不一致!");
                 }
                 
-            }
+            },
+            uploadAvatar(avatar) {
+                var _this=this;
+                console.log(avatar.target.files[0])
+                let file = avatar.target.files[0]
+                let data = new FormData();
+                data.append("file", file, file.name);//很重要 data.append("file", file);不成功
+                data.append('data',Date.now());
+                console.log("data.get('file'):",data.get('file'))
+                return axios.post("api/file", data, {
+                            headers: { "content-type": "multipart/form-data" }
+                        })
+                        .then(function(respond){
+                            if(respond.data&&(respond.data[0]!=undefined)){
+                                var data=respond.data[0];
+                                console.log("上传的图片文件信息:",data);
+                                //获取图片的上传后保存的名称
+                                let pName=data.fileName;
+                                _this.avatarName=pName;
+                                // console.log("当前上传的图片名称列表：",_this.imageListName);
+                            }
+                        })
+                        .catch(function(err){
+                            console.log("上传图片错误");
+                        })
+                
+                           
+                            
+            },
+            
         },
         beforeMount(){
             
@@ -284,6 +338,11 @@
 
                                 if(data.RI_email!=undefined){
                                     _this.currentData.email=data.RI_email;
+                                }
+
+                                //获取用户头像，如果为空就显示为系统默认头像
+                                if(data.avatar!=undefined){
+                                    _this.avatarName=data.avatar;
                                 }
                             }
                         })
@@ -336,9 +395,6 @@
             })
 
             
-
-
-            
             
         },
     }
@@ -371,5 +427,28 @@
     }
     .demo-drawer-footer{
         align-self:center;
+    }
+    .title{
+        display: flex;
+        justify-content: center;
+        align-items:center;
+        height:50px;
+    }
+    .user_avatar{
+        width:30px;
+        height:30px;
+        border:20px;
+        border-radius:50% 50%;
+    }
+    .information-block{
+        margin-top:10px;
+        margin-bottom:10px;
+    }
+    .information-item>h3{
+        color:#87D068;
+    }
+    .ivu-card-head p{
+        height:50px;
+        display:flex;
     }
 </style>

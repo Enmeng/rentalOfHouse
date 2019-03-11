@@ -13,6 +13,8 @@ var sqlMap = {
         insertRenter:'insert into renterInformation(user_name) values (?)',//一旦添加用户为出租者就主动添加出租者
         getInformation:'select password,RI_gender,RI_credit_grade,RI_location,RI_phone_number,RI_email,avatar from userInformation natural join renterInformation where user_name= ?',//获取用户的所有信息
         modifyInformation:'update renterInformation set RI_gender= ?,RI_credit_grade =?,RI_location= ?,RI_phone_number= ?,RI_email= ?,avatar= ? where user_name= ?',//根据用户名修改用户信息
+        getAvatarByUserName:'select avatar from renterInformation where user_name= ?',//根据用户名获得用户头像
+        setAvatarByUserName:'update renterInformation set avatar= ? where user_name= ?',//根据用户名设置用户头像
 
     },
     //求租者信息的相关操作
@@ -20,6 +22,8 @@ var sqlMap = {
         insertRentSeekingPer:'insert into rentSeekingPerInformation(user_name) values(?)',//一旦添加用户为求租者就主动添加求租者
         getInformation:'select password,RSPI_gender,RSPI_location,RSPI_phone_number,RSPI_email,avatar from userInformation natural join rentSeekingPerInformation where user_name= ?',//根据用户名获取所有的其他信息
         modifyInformation:'update rentSeekingPerInformation set RSPI_gender= ?,RSPI_location= ?,RSPI_phone_number= ?,RSPI_email= ?,avatar= ? where user_name= ?',//根据用户名修改用户信息
+        getAvatarByUserName:'select avatar from rentSeekingPerInformation where user_name= ?',//根据用户名获得用户头像
+        setAvatarByUserName:'update rentSeekingPerInformation set avatar= ? where user_name= ?',//根据用户名设置用户头像
 
     },
     //房屋信息的相关操作

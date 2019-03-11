@@ -192,6 +192,37 @@ router.post('/renterInformation/modifyInformation', (req,res) => {
     })
 })
 
+
+//根据用户名获得用户头像
+router.get('/renterInformation/getAvatarByUserName', (req,res) => {
+    var sql=$sql.renterInformation.getAvatarByUserName;
+    var params = req.query||req.params;
+    conn.query(sql,[params.user_name], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonSelect(res, result);
+        }
+    })
+})
+
+//根据用户名设置用户头像
+router.post('/renterInformation/setAvatarByUserName', (req,res) => {
+    var sql=$sql.renterInformation.setAvatarByUserName;
+    var params = req.body;
+    conn.query(sql,[params.avatar,params.user_name], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonModify(res, result);
+        }
+    })
+})
+
+
+
 //求租者信息的相关操作
 
 //一旦添加用户为求租者就主动添加求租者
@@ -237,6 +268,35 @@ router.post('/rentSeekingPerInformation/modifyInformation', (req,res) => {
         }
     })
 })
+
+//根据用户名获得用户头像
+router.get('/rentSeekingPerInformation/getAvatarByUserName', (req,res) => {
+    var sql=$sql.rentSeekingPerInformation.getAvatarByUserName;
+    var params = req.query||req.params;
+    conn.query(sql,[params.user_name], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonSelect(res, result);
+        }
+    })
+})
+
+//根据用户名设置用户头像
+router.post('/rentSeekingPerInformation/setAvatarByUserName', (req,res) => {
+    var sql=$sql.rentSeekingPerInformation.setAvatarByUserName;
+    var params = req.body;
+    conn.query(sql,[params.avatar,params.user_name], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            jsonModify(res, result);
+        }
+    })
+})
+
 
 
 //房屋信息的相关操作
