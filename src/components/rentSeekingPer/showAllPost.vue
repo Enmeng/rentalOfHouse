@@ -2,7 +2,7 @@
 <template>
     <div class="search-rent-seeking-per">
         <div class="search">
-            <Input search enter-button="搜索" placeholder="请输入搜索的关键词" />
+            <h2>显示系统所有未关注的帖子</h2>
         </div>
         <div class="rent-post"  v-for="(item,index) in postList" :key="index">
             <div class="rent-post-information" >

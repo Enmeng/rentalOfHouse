@@ -2,7 +2,7 @@
 <template>
     <div class="search-rent-seeking-per">
         <div class="search">
-            <Input search enter-button="搜索" placeholder="请输入搜索的关键词" />
+            <h2>求租者信息列表</h2>
         </div>
         <div class="rent-post">
             <div class="rent-post-information" v-for="(item,index) in userList">
