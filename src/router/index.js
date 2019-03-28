@@ -5,6 +5,8 @@ import Router from 'vue-router'
 import signInUp from '@/components/signInUp'
 import userPage from '@/components/userPage'
 import rentSeekingPerPageTemp from '@/components/rentSeekingPer/rentSeekingPerPageTemp'
+import rentalKnowledge from '@/components/rentSeekingPer/rentalKnowledge'
+import warning from '@/components/rentSeekingPer/warning'
 Vue.use(Router)
 Vue.use(iView);
 export default new Router({
@@ -23,6 +25,16 @@ export default new Router({
       path: '/rentSeekingPerPageTemp',
       name: 'rentSeekingPerPageTemp',
       component: rentSeekingPerPageTemp
+    },
+    {
+      path: '/rentalKnowledge',
+      name: 'rentalKnowledge',
+      component: rentalKnowledge
+    },
+    {
+      path: '/warning',
+      name: 'warning',
+      component: warning
     }
   ]
 })

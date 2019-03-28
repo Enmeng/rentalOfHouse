@@ -53,6 +53,7 @@
                         <template slot="title">帖子</template>
                         <MenuItem name="4-1">显示系统所有帖子</MenuItem>
                         <MenuItem name="4-2">查看已关注的帖子</MenuItem>
+                        <MenuItem name="4-3">搜索房屋信息</MenuItem>
                     </Submenu>
                 </Submenu>
                 <Submenu name="5">
@@ -86,6 +87,7 @@
                     {name:'3-1',alias:'fillHouseInformation'},
                     {name:'4-1',alias:'showAllPost'},
                     {name:'4-2',alias:'showFollowedPost'},
+                    {name:'4-3',alias:'searchPostList'},
                     {name:'5-1',alias:'setCreditGrade'}
                 ],
                 user_type:'renter',

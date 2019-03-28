@@ -15,6 +15,7 @@
         <rentSeekingPerFillHouseInformation v-else-if="menuItem=='fillHouseInformation'"></rentSeekingPerFillHouseInformation>
         <showFollowedPost v-else-if="menuItem=='showFollowedPost'"></showFollowedPost>
         <showAllPost v-else-if="menuItem=='showAllPost'"></showAllPost>
+        <searchPostList v-else-if="menuItem=='searchPostList'"></searchPostList>
         <setCreditGrade v-else></setCreditGrade>
     </div>
     </div>
@@ -34,6 +35,7 @@
     import showFollowedPost from '@/components/rentSeekingPer/showFollowedPost';
     import showAllPost from '@/components/rentSeekingPer/showAllPost';
     import setCreditGrade from '@/components/rentSeekingPer/setCreditGrade';
+    import searchPostList from '@/components/rentSeekingPer/searchPostList';
     export default{
         name :'userPage',
         components:{
@@ -48,7 +50,8 @@
             rentSeekingPerFillHouseInformation,
             showFollowedPost,
             showAllPost,
-            setCreditGrade
+            setCreditGrade,
+            searchPostList
         },
         data(){
             return {
