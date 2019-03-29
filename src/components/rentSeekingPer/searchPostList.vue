@@ -2,7 +2,7 @@
 <template>
     <div class="searchPostList">
         <div class="searchPostListTitle">
-            <Input search enter-button placeholder="输入关键字(地区名)" v-model="searchCondition"/>
+            <!-- <Input search enter-button placeholder="输入关键字(地区名)" v-model="searchCondition"/> -->
             <div class="knowledge">
                 <Icon type="md-paw" />
                 <p class="tip">足迹</p>
@@ -115,6 +115,7 @@
     import axios from 'axios';
     import Router from 'vue-router';
     import Vue from 'vue';
+    import { eventBus } from '../../eventBus';
     export default{
         name:'searchPostList',
         data(){
@@ -374,10 +375,9 @@
             foldPost(index){
                 this.spreadIndex=-1;
             },
-            follow(index){
+            changeFollow(id){
                 var _this=this;
-                var postId=this.list[index].post_id;
-                axios.post('/api/rentSeekingPerFollowedPost/insertRentSeekingPerPost',{user_name:_this.currentUserName,post_id:postId})
+                axios.post('/api/rentSeekingPerFollowedPost/insertRentSeekingPerPost',{user_name:_this.currentUserName,post_id:id})
                 .then(function(respond){
                     if(respond.data&&respond.data.code=='1'){
                         _this.$Message.success("关注成功!");
@@ -485,6 +485,11 @@
         },
         mounted(){
             var _this=this;
+            eventBus.$on('follow',({id})=>{
+                console.log("followId",id)
+                // _this.changeFollow(id);
+              }
+            )
             //获取系统的所有帖子信息
             // axios.get('/api/postInformation/getAllPost')
             // .then(function(respond){
@@ -585,6 +590,8 @@
                          }
                      }
             });
+
+            
         }
     }
 </script>
