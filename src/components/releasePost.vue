@@ -240,6 +240,8 @@
     }
     .imageList{
         width:90%;
+        display:flex;
+        flex-direction:column;
     }
     .imageList>img{
         width:100%;
