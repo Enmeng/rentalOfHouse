@@ -456,6 +456,21 @@ router.get('/postInformation/getFollowedPostInforById', (req,res) => {
     })
 })
 
+//根据帖子id获取帖子的详细信息
+router.get('/postInformation/postDetailById', (req,res) => {
+    var sql=$sql.postInformation.postDetailById;
+    var params = req.query||req.params;
+    conn.query(sql, [params.post_id], function(err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            console.log(result)
+            jsonSelect(res, result);
+        }
+    })
+})
+
 
 //求租者关注的帖子信息
 

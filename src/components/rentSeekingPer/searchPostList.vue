@@ -43,7 +43,7 @@
             </div>
         </div>
         <div class="postList">
-            <div class="postItem" v-for="(item,index) in postList" >
+            <div class="postItem" v-for="(item,index) in postList" @click="goToDetail(item)">
                 <div class="imgContainer"  v-if="imageList[index]&&imageList[index].length&&imageList[index].length!=0">
                     <img :src="imageList[index][0]">
                     <div class="imageLength">
@@ -477,6 +477,10 @@
                         this.conditionList.push({name:domType,value:value})
                     }
                     console.log("changeCondition,",this.conditionList);
+            },
+            goToDetail(item){
+                const {href} = this.$router.resolve({name:'postDetail',path: '/postDetail',query:{postId:item.post_id}});
+                window.open(href, '_blank');
             }
         },
         mounted(){
@@ -831,6 +835,7 @@
         box-sizing:border-box;
         /* flex:1 0 auto; */
         flex-shrink:0;
+        cursor:pointer;
     }
     .imgContainer{
         display:flex;

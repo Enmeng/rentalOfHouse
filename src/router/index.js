@@ -7,6 +7,7 @@ import userPage from '@/components/userPage'
 import rentSeekingPerPageTemp from '@/components/rentSeekingPer/rentSeekingPerPageTemp'
 import rentalKnowledge from '@/components/rentSeekingPer/rentalKnowledge'
 import warning from '@/components/rentSeekingPer/warning'
+import postDetail from '@/components/rentSeekingPer/postDetail'
 Vue.use(Router)
 Vue.use(iView);
 export default new Router({
@@ -35,6 +36,11 @@ export default new Router({
       path: '/warning',
       name: 'warning',
       component: warning
+    },
+    {
+      path: '/postDetail',
+      name: 'postDetail',
+      component: postDetail
     }
   ]
 })
